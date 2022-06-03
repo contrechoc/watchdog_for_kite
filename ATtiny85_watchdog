@@ -1,0 +1,33 @@
+#include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/sleep.h>
+#include <avr/interrupt.h>
+
+bool led = true;
+
+void setup() {
+  // Misc setup
+  pinMode(0, OUTPUT);
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+
+  // Setup watchdog timer to interrupt every second
+  MCUSR &= ~_BV(WDRF);
+  WDTCR |= (_BV(WDCE) | _BV(WDE));
+  WDTCR = _BV(WDP1) | _BV(WDP2);
+  WDTCR |= _BV(WDIE);
+  sei();
+}
+
+ISR(WDT_vect) {
+  sleep_disable();
+  //led = !led;
+  // Execution continues in loop()
+}
+
+void loop() {
+  digitalWrite(0,   HIGH  );
+  delay(30);
+   digitalWrite(0,   LOW  );
+  sleep_enable();
+  sleep_cpu(); // MCU goes to sleep here; wake up by watchdog timer interrupt
+}
